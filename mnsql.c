@@ -6,18 +6,23 @@ struct PARAM
 {
     char *key;
     unsigned int keylen;
+    unsigned char datatype;
     void *data;
     unsigned int datalen;
     unsigned int deadline;
-    struct PARAM *head;
     struct PARAM *tail;
 };
 struct PARAM *globalparam[256];
 
 struct PARAM *FindKey(const char *mkey, unsigned int keylen)
 {
+    if (keylen == 0)
+    {
+        return NULL;
+    }
     unsigned int hash = mkey[0];
     struct PARAM *param = globalparam[hash];
+    struct PARAM *beforeparam = NULL;
     while (param != NULL)
     {
         time_t seconds = time(NULL);
@@ -26,17 +31,13 @@ struct PARAM *FindKey(const char *mkey, unsigned int keylen)
             struct PARAM *p = param;
             param = param->tail;
             unsigned int hash = mkey[0];
-            if (p->head != NULL)
+            if (beforeparam != NULL)
             {
-                p->head->tail = p->tail;
+                beforeparam->tail = p->tail;
             }
             else
             {
                 globalparam[hash] = p->tail;
-            }
-            if (p->tail != NULL)
-            {
-                p->tail->head = p->head;
             }
             free(p->key);
             free(p->data);
@@ -44,44 +45,30 @@ struct PARAM *FindKey(const char *mkey, unsigned int keylen)
         }
         else if (param->keylen == keylen && !memcmp(param->key, mkey, keylen))
         {
+            if (beforeparam != NULL)
+            {
+                beforeparam->tail = param->tail;
+            }
+            param->tail = globalparam[hash];
+            globalparam[hash] = param;
             return param;
         }
         else
         {
+            beforeparam = param;
             param = param->tail;
         }
     }
     return NULL;
 }
 
-void MoveParam(struct PARAM *param, unsigned int hash)
+int AddKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, unsigned char datatype)
 {
-    if (param->head != NULL)
+    if (keylen == 0 || datalen == 0)
     {
-        param->head->tail = param->tail;
+        return __LINE__;
     }
-    else
-    {
-        globalparam[hash] = param->tail;
-    }
-    if (param->tail != NULL)
-    {
-        param->tail->head = param->head;
-    }
-    struct PARAM *gparam = globalparam[hash];
-    param->tail = gparam;
-    param->head = NULL;
-    if (gparam != NULL)
-    {
-        gparam->head = param;
-    }
-    globalparam[hash] = param;
-}
-
-int AddKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl)
-{
     unsigned int hash = mkey[0];
-    struct PARAM *gparam = globalparam[hash];
     char *key = (char *)malloc(keylen);
     if (key == NULL)
     {
@@ -115,75 +102,62 @@ int AddKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned in
     {
         param->deadline = seconds + ttl;
     }
-    param->head = NULL;
-    param->tail = gparam;
-    if (gparam != NULL)
-    {
-        gparam->head = param;
-    }
+    param->datatype = datatype;
+    param->tail = globalparam[hash];
     globalparam[hash] = param;
     return 0;
 }
 
-int SetEx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl)
+int SetEx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, unsigned char datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param != NULL)
     {
         unsigned int hash = mkey[0];
-        if (param->head != NULL)
-        {
-            param->head->tail = param->tail;
-        }
-        else
-        {
-            globalparam[hash] = param->tail;
-        }
-        if (param->tail != NULL)
-        {
-            param->tail->head = param->head;
-        }
+        globalparam[hash] = param->tail;
         free(param->key);
         free(param->data);
         free(param);
     }
-    return AddKey(mkey, keylen, mdata, datalen, ttl);
+    return AddKey(mkey, keylen, mdata, datalen, ttl, datatype);
 }
 
-int Set(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen)
+int Set(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, unsigned char datatype)
 {
-    return SetEx(mkey, keylen, mdata, datalen, -1);
+    return SetEx(mkey, keylen, mdata, datalen, -1, datatype);
 }
 
-int SetNx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen)
-{
-    if (FindKey(mkey, keylen) != NULL)
-    {
-        return 0;
-    }
-    return AddKey(mkey, keylen, mdata, datalen, -1);
-}
-
-int SetNex(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl)
+int SetNx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, unsigned char datatype)
 {
     if (FindKey(mkey, keylen) != NULL)
     {
         return 0;
     }
-    return AddKey(mkey, keylen, mdata, datalen, ttl);
+    return AddKey(mkey, keylen, mdata, datalen, -1, datatype);
 }
 
-int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen)
+int SetNex(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, unsigned char datatype)
+{
+    if (FindKey(mkey, keylen) != NULL)
+    {
+        return 0;
+    }
+    return AddKey(mkey, keylen, mdata, datalen, ttl, datatype);
+}
+
+unsigned int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, unsigned char *datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
     {
         return 0;
     }
-    MoveParam(param, mkey[0]);
     unsigned int dlen = param->datalen > *datalen ? *datalen : param->datalen;
-    memcpy(mdata, param->data, dlen);
-    *datalen = dlen;
+    if (dlen > 0 && mdata != NULL) {
+        memcpy(mdata, param->data, dlen);
+        *datalen = dlen;
+    }
+    *datatype = param->datatype;
     return param->datalen;
 }
 
@@ -193,18 +167,7 @@ int Del(const char *mkey, unsigned int keylen)
     if (param != NULL)
     {
         unsigned int hash = mkey[0];
-        if (param->head != NULL)
-        {
-            param->head->tail = param->tail;
-        }
-        else
-        {
-            globalparam[hash] = param->tail;
-        }
-        if (param->tail != NULL)
-        {
-            param->tail->head = param->head;
-        }
+        globalparam[hash] = param->tail;
         free(param->key);
         free(param->data);
         free(param);
@@ -218,9 +181,8 @@ int Incr(const char *mkey, unsigned int keylen)
     if (param == NULL)
     {
         int n = 1;
-        return AddKey(mkey, keylen, &n, sizeof(int), -1);
+        return AddKey(mkey, keylen, &n, sizeof(int), -1, 0);
     }
-    MoveParam(param, mkey[0]);
     unsigned int datalen = param->datalen;
     if (datalen == sizeof(char))
     {
@@ -261,9 +223,8 @@ int Decr(char *mkey, unsigned int keylen)
     if (param == NULL)
     {
         int n = -1;
-        return AddKey(mkey, keylen, &n, sizeof(int), -1);
+        return AddKey(mkey, keylen, &n, sizeof(int), -1, 0);
     }
-    MoveParam(param, mkey[0]);
     unsigned int datalen = param->datalen;
     if (datalen == sizeof(char))
     {

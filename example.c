@@ -1,5 +1,6 @@
-#include "mnsql.h"
+/*
 #include <stdio.h>
+#include "mnsql.h"
 
 int main()
 {
@@ -19,3 +20,4 @@ int main()
     printf("str:%s\n", str);
     return 0;
 }
+*/
