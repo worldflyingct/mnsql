@@ -222,7 +222,7 @@ int Incr(const char *mkey, unsigned int keylen)
     return 0;
 }
 
-int Decr(char *mkey, unsigned int keylen)
+int Decr(const char *mkey, unsigned int keylen)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
