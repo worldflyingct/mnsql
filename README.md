@@ -16,8 +16,8 @@ func SetNx(key string, value interface{}) int
 如果存在相同的key则不写入  
 func SetNex(key string, value interface{}, ttl int) int  
 
-读取对象，如果对象不存在，会返回一个空的interface{}  
-func Get(key string) interface{}  
+读取对象，如果对象不存在，第2个返回值会返回-2  
+func Get(key string) (interface{}, int)  
 
 删除对象  
 func Del(key string) int  

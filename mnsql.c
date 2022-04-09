@@ -64,7 +64,11 @@ struct PARAM *FindKey(const char *mkey, unsigned int keylen)
 
 int AddKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype)
 {
-    if (keylen == 0 || datalen == 0)
+    if (keylen == 0)
+    {
+        return __LINE__;
+    }
+    if (datalen == 0)
     {
         return __LINE__;
     }
@@ -153,7 +157,8 @@ unsigned int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned in
         return 0;
     }
     unsigned int dlen = param->datalen > *datalen ? *datalen : param->datalen;
-    if (dlen > 0 && mdata != NULL) {
+    if (dlen > 0 && mdata != NULL)
+    {
         memcpy(mdata, param->data, dlen);
         *datalen = dlen;
     }
