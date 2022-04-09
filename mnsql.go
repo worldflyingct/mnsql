@@ -35,65 +35,38 @@ func _Set(key string, value interface{}, ttl int, settype int) int {
 	switch data := value.(type) {
 	case int:
 		clen := unsafe.Sizeof(data)
-		if clen == 4 {
-			d := C.int32_t(data)
-			cdata := unsafe.Pointer(&d)
-			clen := unsafe.Sizeof(d)
-			return cSet(key, cdata, uint(clen), ttl, settype, 0)
-		} else if clen == 8 {
-			d := C.int64_t(data)
-			cdata := unsafe.Pointer(&d)
-			clen := unsafe.Sizeof(d)
-			return cSet(key, cdata, uint(clen), ttl, settype, 0)
-		}
+		cdata := unsafe.Pointer(&data)
+		return cSet(key, cdata, uint(clen), ttl, settype, 0)
 	case uint:
 		clen := unsafe.Sizeof(data)
-		if clen == 4 {
-			d := C.uint32_t(data)
-			cdata := unsafe.Pointer(&d)
-			clen := unsafe.Sizeof(d)
-			return cSet(key, cdata, uint(clen), ttl, settype, 1)
-		} else if clen == 8 {
-			d := C.uint64_t(data)
-			cdata := unsafe.Pointer(&d)
-			clen := unsafe.Sizeof(d)
-			return cSet(key, cdata, uint(clen), ttl, settype, 1)
-		}
+		cdata := unsafe.Pointer(&data)
+		return cSet(key, cdata, uint(clen), ttl, settype, 1)
 	case bool:
-		d := C._Bool(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 1, ttl, settype, 2)
 	case int8:
-		d := C.int8_t(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 1, ttl, settype, 3)
 	case uint8:
-		d := C.uint8_t(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 1, ttl, settype, 4)
 	case int16:
-		d := C.int16_t(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 2, ttl, settype, 5)
 	case uint16:
-		d := C.uint16_t(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 2, ttl, settype, 6)
 	case int32:
-		d := C.int32_t(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 4, ttl, settype, 7)
 	case uint32:
-		d := C.uint32_t(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 4, ttl, settype, 8)
 	case int64:
-		d := C.int64_t(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 8, ttl, settype, 9)
 	case uint64:
-		d := C.uint64_t(data)
-		cdata := unsafe.Pointer(&d)
+		cdata := unsafe.Pointer(&data)
 		return cSet(key, cdata, 8, ttl, settype, 10)
 	case string:
 		d := C.CString(data)
@@ -142,61 +115,49 @@ func Get(key string) interface{} {
 	datalen = C.Get(ckey, keylen, nil, &datalen, &datatype)
 	switch datatype {
 	case 0:
-		if datalen == 4 {
-			var cdata C.int32_t
-			C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-			data = int(cdata)
-		} else if datalen == 8 {
-			var cdata C.int64_t
-			C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-			data = int(cdata)
-		}
+		var cdata int
+		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+		data = cdata
 	case 1:
-		if datalen == 4 {
-			var cdata C.uint32_t
-			C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-			data = int(cdata)
-		} else if datalen == 8 {
-			var cdata C.uint64_t
-			C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-			data = int(cdata)
-		}
+		var cdata uint
+		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+		data = cdata
 	case 2:
-		var cdata C._Bool
+		var cdata bool
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = bool(cdata)
+		data = cdata
 	case 3:
-		var cdata C.int8_t
+		var cdata int8
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = int8(cdata)
+		data = cdata
 	case 4:
-		var cdata C.uint8_t
+		var cdata uint8
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = uint8(cdata)
+		data = cdata
 	case 5:
-		var cdata C.int16_t
+		var cdata int16
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = int16(cdata)
+		data = cdata
 	case 6:
-		var cdata C.uint16_t
+		var cdata uint16
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = uint16(cdata)
+		data = cdata
 	case 7:
-		var cdata C.int32_t
+		var cdata int32
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = int32(cdata)
+		data = cdata
 	case 8:
-		var cdata C.uint32_t
+		var cdata uint32
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = uint32(cdata)
+		data = cdata
 	case 9:
-		var cdata C.int64_t
+		var cdata int64
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = int64(cdata)
+		data = cdata
 	case 10:
-		var cdata C.uint64_t
+		var cdata uint64
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = uint64(cdata)
+		data = cdata
 	case 11:
 		cdata := make([]byte, datalen)
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
@@ -236,16 +197,3 @@ func Decr(key string) int {
 	C.free(unsafe.Pointer(ckey))
 	return res
 }
-
-/*
-func main() {
-	Set("hello", 500)
-	w := Get("hello")
-	str, ok := w.(int)
-	if ok {
-		fmt.Println(str)
-	} else {
-		fmt.Println("fail")
-	}
-}
-*/
