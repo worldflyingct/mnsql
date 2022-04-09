@@ -6,7 +6,7 @@ struct PARAM
 {
     char *key;
     unsigned int keylen;
-    unsigned char datatype;
+    int datatype;
     void *data;
     unsigned int datalen;
     unsigned int deadline;
@@ -62,7 +62,7 @@ struct PARAM *FindKey(const char *mkey, unsigned int keylen)
     return NULL;
 }
 
-int AddKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, unsigned char datatype)
+int AddKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype)
 {
     if (keylen == 0 || datalen == 0)
     {
@@ -108,7 +108,7 @@ int AddKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned in
     return 0;
 }
 
-int SetEx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, unsigned char datatype)
+int SetEx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param != NULL)
@@ -122,12 +122,12 @@ int SetEx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int
     return AddKey(mkey, keylen, mdata, datalen, ttl, datatype);
 }
 
-int Set(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, unsigned char datatype)
+int Set(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype)
 {
     return SetEx(mkey, keylen, mdata, datalen, -1, datatype);
 }
 
-int SetNx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, unsigned char datatype)
+int SetNx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype)
 {
     if (FindKey(mkey, keylen) != NULL)
     {
@@ -136,7 +136,7 @@ int SetNx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int
     return AddKey(mkey, keylen, mdata, datalen, -1, datatype);
 }
 
-int SetNex(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, unsigned char datatype)
+int SetNex(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype)
 {
     if (FindKey(mkey, keylen) != NULL)
     {
@@ -145,7 +145,7 @@ int SetNex(const char *mkey, unsigned int keylen, const void *mdata, unsigned in
     return AddKey(mkey, keylen, mdata, datalen, ttl, datatype);
 }
 
-unsigned int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, unsigned char *datatype)
+unsigned int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, int *datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)

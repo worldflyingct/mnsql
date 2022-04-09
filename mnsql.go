@@ -14,18 +14,18 @@ import (
 
 var metex sync.Mutex
 
-func cSet(key string, cdata unsafe.Pointer, datalen uint, ttl int, settype int, datatype uint8) int {
+func cSet(key string, cdata unsafe.Pointer, datalen uint, ttl int, settype int, datatype int) int {
 	res := 0
 	ckey := C.CString(key)
 	switch settype {
 	case 0:
-		res = int(C.Set(ckey, C.uint(len(key)), cdata, C.uint(datalen), C.uint8_t(datatype)))
+		res = int(C.Set(ckey, C.uint(len(key)), cdata, C.uint(datalen), C.int(datatype)))
 	case 1:
-		res = int(C.SetEx(ckey, C.uint(len(key)), cdata, C.uint(datalen), C.int(ttl), C.uint8_t(datatype)))
+		res = int(C.SetEx(ckey, C.uint(len(key)), cdata, C.uint(datalen), C.int(ttl), C.int(datatype)))
 	case 2:
-		res = int(C.SetNx(ckey, C.uint(len(key)), cdata, C.uint(datalen), C.uint8_t(datatype)))
+		res = int(C.SetNx(ckey, C.uint(len(key)), cdata, C.uint(datalen), C.int(datatype)))
 	case 3:
-		res = int(C.SetNex(ckey, C.uint(len(key)), cdata, C.uint(datalen), C.int(ttl), C.uint8_t(datatype)))
+		res = int(C.SetNex(ckey, C.uint(len(key)), cdata, C.uint(datalen), C.int(ttl), C.int(datatype)))
 	}
 	C.free(unsafe.Pointer(ckey))
 	return res
@@ -34,46 +34,32 @@ func cSet(key string, cdata unsafe.Pointer, datalen uint, ttl int, settype int, 
 func _Set(key string, value interface{}, ttl int, settype int) int {
 	switch data := value.(type) {
 	case int:
-		clen := unsafe.Sizeof(data)
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, uint(clen), ttl, settype, 0)
+		cdata := C.int(data)
+		return cSet(key, unsafe.Pointer(&cdata), uint(unsafe.Sizeof(cdata)), ttl, settype, 0)
 	case uint:
-		clen := unsafe.Sizeof(data)
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, uint(clen), ttl, settype, 1)
+		cdata := C.uint(data)
+		return cSet(key, unsafe.Pointer(&cdata), uint(unsafe.Sizeof(cdata)), ttl, settype, 1)
 	case bool:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 1, ttl, settype, 2)
+		return cSet(key, unsafe.Pointer(&data), 1, ttl, settype, 2)
 	case int8:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 1, ttl, settype, 3)
+		return cSet(key, unsafe.Pointer(&data), 1, ttl, settype, 3)
 	case uint8:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 1, ttl, settype, 4)
+		return cSet(key, unsafe.Pointer(&data), 1, ttl, settype, 4)
 	case int16:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 2, ttl, settype, 5)
+		return cSet(key, unsafe.Pointer(&data), 2, ttl, settype, 5)
 	case uint16:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 2, ttl, settype, 6)
+		return cSet(key, unsafe.Pointer(&data), 2, ttl, settype, 6)
 	case int32:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 4, ttl, settype, 7)
+		return cSet(key, unsafe.Pointer(&data), 4, ttl, settype, 7)
 	case uint32:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 4, ttl, settype, 8)
+		return cSet(key, unsafe.Pointer(&data), 4, ttl, settype, 8)
 	case int64:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 8, ttl, settype, 9)
+		return cSet(key, unsafe.Pointer(&data), 8, ttl, settype, 9)
 	case uint64:
-		cdata := unsafe.Pointer(&data)
-		return cSet(key, cdata, 8, ttl, settype, 10)
+		return cSet(key, unsafe.Pointer(&C.uint64(data)), 8, ttl, settype, 10)
 	case string:
-		d := C.CString(data)
-		cdata := unsafe.Pointer(d)
-		res := cSet(key, cdata, uint(len(data)), ttl, settype, 11)
-		C.free(cdata)
-		return res
+		cdata := []byte(data)
+		return cSet(key, unsafe.Pointer(&cdata[0]), uint(len(data)), ttl, settype, 11)
 	case []byte:
 		return cSet(key, unsafe.Pointer(&data[0]), uint(len(data)), ttl, settype, 12)
 	}
@@ -107,21 +93,25 @@ func SetNex(key string, value interface{}, ttl int) int {
 func Get(key string) interface{} {
 	metex.Lock()
 	defer metex.Unlock()
-	var data interface{}
 	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
 	keylen := C.uint(len(key))
-	var datatype C.uint8_t
+	var data interface{}
+	var datatype C.int
 	datalen := C.uint(0)
 	datalen = C.Get(ckey, keylen, nil, &datalen, &datatype)
+	if datalen == 0 {
+		return data
+	}
 	switch datatype {
 	case 0:
-		var cdata int
+		var cdata C.int
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = cdata
+		data = int(cdata)
 	case 1:
-		var cdata uint
+		var cdata C.uint
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		data = cdata
+		data = uint(cdata)
 	case 2:
 		var cdata bool
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
@@ -167,7 +157,6 @@ func Get(key string) interface{} {
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
 		data = cdata
 	}
-	C.free(unsafe.Pointer(ckey))
 	return data
 }
 
