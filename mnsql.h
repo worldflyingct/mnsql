@@ -1,6 +1,9 @@
 #ifndef __MNSQL_H__
 #define __MNSQL_H__
 
+#include <stdlib.h>
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C"
 {

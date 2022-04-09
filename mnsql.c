@@ -1,5 +1,4 @@
-#include <stdlib.h>
-#include <stdint.h>
+#include "mnsql.h"
 #include <string.h>
 #include <time.h>
 
