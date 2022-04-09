@@ -18,10 +18,10 @@ var metex sync.Mutex
 func cSet(key string, cdata unsafe.Pointer, datalen uint, ttl int, settype int, datatype int) int {
 	keylen := len(key)
 	if keylen == 0 {
-		return -2
+		return -1
 	}
 	if datalen == 0 {
-		return -3
+		return -2
 	}
 	res := 0
 	ckey := C.CString(key)
@@ -73,38 +73,38 @@ func _Set(key string, value interface{}, ttl int, settype int) int {
 	case []byte:
 		return cSet(key, unsafe.Pointer(&data[0]), uint(len(data)), ttl, settype, 12)
 	}
-	return -1
+	return -3
 }
 
-// 返回 0：成功；-1：value不是支持的类型；-2：key长度为0；-3：value长度为0；
+// 返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；
 func Set(key string, value interface{}) int {
 	metex.Lock()
 	defer metex.Unlock()
 	return _Set(key, value, -1, 0)
 }
 
-// 返回 0：成功；-1：value不是支持的类型；-2：key长度为0；-3：value长度为0；
+// 返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；
 func SetEx(key string, value interface{}, ttl int) int {
 	metex.Lock()
 	defer metex.Unlock()
 	return _Set(key, value, ttl, 1)
 }
 
-// 返回 0：成功；-1：value不是支持的类型；-2：key长度为0；-3：value长度为0；
+// 返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；
 func SetNx(key string, value interface{}) int {
 	metex.Lock()
 	defer metex.Unlock()
 	return _Set(key, value, -1, 2)
 }
 
-// 返回 0：成功；-1：value不是支持的类型；-2：key长度为0；-3：value长度为0；
+// 返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；
 func SetNex(key string, value interface{}, ttl int) int {
 	metex.Lock()
 	defer metex.Unlock()
 	return _Set(key, value, ttl, 3)
 }
 
-// 返回 0：成功；-1：key长度为0；-2：data不存在；-3：数据类型异常；
+// 返回定义：0代表成功；-1代表key长度为0；-2代表对象不存在；-3代表未知的数据类型；
 func Get(key string) (interface{}, int) {
 	keylen := C.uint(len(key))
 	if keylen == 0 {
@@ -177,7 +177,7 @@ func Get(key string) (interface{}, int) {
 	return nil, -3
 }
 
-// 返回 0：成功；-1：key长度为0；
+// 返回定义：0代表成功；-1代表key长度为0；
 func Del(key string) int {
 	keylen := C.uint(len(key))
 	if keylen == 0 {
@@ -191,7 +191,7 @@ func Del(key string) int {
 	return res
 }
 
-// 返回 0：成功；-1：key长度为0；
+// 返回定义：0代表成功；-1代表key长度为0；
 func Incr(key string) int {
 	keylen := C.uint(len(key))
 	if keylen == 0 {
@@ -205,7 +205,7 @@ func Incr(key string) int {
 	return res
 }
 
-// 返回 0：成功；-1：key长度为0；
+// 返回定义：0代表成功；-1代表key长度为0；
 func Decr(key string) int {
 	keylen := C.uint(len(key))
 	if keylen == 0 {
