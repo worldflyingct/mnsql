@@ -63,13 +63,21 @@ func _Set(key string, value interface{}, ttl int, settype int) int {
 		return cSet(key, unsafe.Pointer(&data), 8, ttl, settype, 9)
 	case uint64:
 		return cSet(key, unsafe.Pointer(&data), 8, ttl, settype, 10)
+	case float32:
+		return cSet(key, unsafe.Pointer(&data), 4, ttl, settype, 11)
+	case float64:
+		return cSet(key, unsafe.Pointer(&data), 8, ttl, settype, 12)
+	case complex64:
+		return cSet(key, unsafe.Pointer(&data), 8, ttl, settype, 13)
+	case complex128:
+		return cSet(key, unsafe.Pointer(&data), 16, ttl, settype, 14)
 	case string:
 		cdata := unsafe.Pointer(C.CString(data))
-		res := cSet(key, cdata, uint(len(data)), ttl, settype, 11)
+		res := cSet(key, cdata, uint(len(data)), ttl, settype, 15)
 		C.free(cdata)
 		return res
 	case []byte:
-		return cSet(key, unsafe.Pointer(&data[0]), uint(len(data)), ttl, settype, 12)
+		return cSet(key, unsafe.Pointer(&data[0]), uint(len(data)), ttl, settype, 16)
 	}
 	return -3
 }
@@ -156,10 +164,26 @@ func Get(key string) (interface{}, int) {
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		return cdata, 0
 	case 11:
+		var cdata float32
+		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 12:
+		var cdata float64
+		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 13:
+		var cdata complex64
+		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 14:
+		var cdata complex128
+		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 15:
 		cdata := make([]byte, datalen)
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
 		return string(cdata), 0
-	case 12:
+	case 16:
 		cdata := make([]byte, datalen)
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
 		return cdata, 0
