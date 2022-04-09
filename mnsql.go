@@ -1,4 +1,4 @@
-package main
+package mnsql
 
 /*
 #include <stdlib.h>
