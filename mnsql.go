@@ -56,7 +56,7 @@ func _Set(key string, value interface{}, ttl int, settype int) int {
 	case int64:
 		return cSet(key, unsafe.Pointer(&data), 8, ttl, settype, 9)
 	case uint64:
-		return cSet(key, unsafe.Pointer(&C.uint64(data)), 8, ttl, settype, 10)
+		return cSet(key, unsafe.Pointer(&data), 8, ttl, settype, 10)
 	case string:
 		cdata := []byte(data)
 		return cSet(key, unsafe.Pointer(&cdata[0]), uint(len(data)), ttl, settype, 11)
