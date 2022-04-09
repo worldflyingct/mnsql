@@ -25,19 +25,19 @@ struct PARAM *FindKey(const char *mkey, unsigned int keylen)
     struct PARAM *beforeparam = NULL;
     while (param != NULL)
     {
-        time_t seconds = time(NULL);
-        if (seconds > param->deadline)
+        time_t now = time(NULL);
+        if (now > param->deadline)
         {
             struct PARAM *p = param;
             param = param->tail;
             unsigned int hash = mkey[0];
             if (beforeparam != NULL)
             {
-                beforeparam->tail = p->tail;
+                beforeparam->tail = param;
             }
             else
             {
-                globalparam[hash] = p->tail;
+                globalparam[hash] = param;
             }
             free(p->key);
             free(p->data);
@@ -48,9 +48,9 @@ struct PARAM *FindKey(const char *mkey, unsigned int keylen)
             if (beforeparam != NULL)
             {
                 beforeparam->tail = param->tail;
+                param->tail = globalparam[hash];
+                globalparam[hash] = param;
             }
-            param->tail = globalparam[hash];
-            globalparam[hash] = param;
             return param;
         }
         else
@@ -97,14 +97,14 @@ int AddKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned in
     param->keylen = keylen;
     param->data = data;
     param->datalen = datalen;
-    time_t seconds = time(NULL);
+    time_t now = time(NULL);
     if (ttl == -1)
     {
         param->deadline = -1;
     }
     else
     {
-        param->deadline = seconds + ttl;
+        param->deadline = now + ttl;
     }
     param->datatype = datatype;
     param->tail = globalparam[hash];
