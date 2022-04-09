@@ -76,28 +76,28 @@ func _Set(key string, value interface{}, ttl int, settype int) int {
 	return -3
 }
 
-// 返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；
+// 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
 func Set(key string, value interface{}) int {
 	metex.Lock()
 	defer metex.Unlock()
 	return _Set(key, value, -1, 0)
 }
 
-// 返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；
+// 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
 func SetEx(key string, value interface{}, ttl int) int {
 	metex.Lock()
 	defer metex.Unlock()
 	return _Set(key, value, ttl, 1)
 }
 
-// 返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；
+// 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
 func SetNx(key string, value interface{}) int {
 	metex.Lock()
 	defer metex.Unlock()
 	return _Set(key, value, -1, 2)
 }
 
-// 返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；
+// 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
 func SetNex(key string, value interface{}, ttl int) int {
 	metex.Lock()
 	defer metex.Unlock()

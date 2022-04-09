@@ -3,21 +3,21 @@
 
 # 存在如下函数
 写入对象，但是如果存在相同的则覆盖写入  
-返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；  
+返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；  
 func Set(key string, value interface{}) int  
 
 写入有生命期的对象，生命期消失后数据自动消失  
 但是如果存在相同的则覆盖写入  
-返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；  
+返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；  
 func SetEx(key string, value interface{}) int  
 
 写入对象，但是如果存在相同的key则不写入  
-返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；  
+返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；  
 func SetNx(key string, value interface{}) int  
 
 写入有生命期的对象，生命期消失后数据自动消失  
 如果存在相同的key则不写入  
-返回定义：0代表成功；-1：key长度为0；-2：value长度为0；-3代表value不是支持的类型；  
+返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；  
 func SetNex(key string, value interface{}, ttl int) int  
 
 读取对象  
