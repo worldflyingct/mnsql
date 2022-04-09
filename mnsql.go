@@ -23,8 +23,9 @@ func cSet(key string, cdata unsafe.Pointer, datalen uint, ttl int, settype int, 
 	if datalen == 0 {
 		return -2
 	}
-	res := 0
+	var res int
 	ckey := C.CString(key)
+	metex.Lock()
 	switch settype {
 	case 0:
 		res = int(C.Set(ckey, C.uint(keylen), cdata, C.uint(datalen), C.int(datatype)))
@@ -35,6 +36,7 @@ func cSet(key string, cdata unsafe.Pointer, datalen uint, ttl int, settype int, 
 	case 3:
 		res = int(C.SetNex(ckey, C.uint(keylen), cdata, C.uint(datalen), C.int(ttl), C.int(datatype)))
 	}
+	metex.Unlock()
 	C.free(unsafe.Pointer(ckey))
 	return res
 }
@@ -76,29 +78,21 @@ func _Set(key string, value interface{}, ttl int, settype int) int {
 
 // 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
 func Set(key string, value interface{}) int {
-	metex.Lock()
-	defer metex.Unlock()
 	return _Set(key, value, -1, 0)
 }
 
 // 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
 func SetEx(key string, value interface{}, ttl int) int {
-	metex.Lock()
-	defer metex.Unlock()
 	return _Set(key, value, ttl, 1)
 }
 
 // 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
 func SetNx(key string, value interface{}) int {
-	metex.Lock()
-	defer metex.Unlock()
 	return _Set(key, value, -1, 2)
 }
 
 // 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
 func SetNex(key string, value interface{}, ttl int) int {
-	metex.Lock()
-	defer metex.Unlock()
 	return _Set(key, value, ttl, 3)
 }
 
@@ -108,25 +102,25 @@ func Get(key string) (interface{}, int) {
 	if keylen == 0 {
 		return nil, -1
 	}
-	metex.Lock()
-	defer metex.Unlock()
-	ckey := C.CString(key)
-	defer C.free(unsafe.Pointer(ckey))
 	var datatype C.int
 	datalen := C.uint(0)
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	metex.Lock()
+	defer metex.Unlock()
 	datalen = C.Get(ckey, keylen, nil, &datalen, &datatype)
 	if datalen == 0 {
 		return nil, -2
 	}
 	switch datatype {
 	case 0:
-		var cdata C.int
+		var cdata int
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		return int(cdata), 0
+		return cdata, 0
 	case 1:
-		var cdata C.uint
+		var cdata uint
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
-		return uint(cdata), 0
+		return cdata, 0
 	case 2:
 		var cdata bool
 		C.Get(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
@@ -181,10 +175,10 @@ func Del(key string) int {
 	if keylen == 0 {
 		return -1
 	}
-	metex.Lock()
-	defer metex.Unlock()
 	ckey := C.CString(key)
+	metex.Lock()
 	res := int(C.Del(ckey, keylen))
+	metex.Unlock()
 	C.free(unsafe.Pointer(ckey))
 	return res
 }
@@ -195,10 +189,10 @@ func Incr(key string) int {
 	if keylen == 0 {
 		return -1
 	}
-	metex.Lock()
-	defer metex.Unlock()
 	ckey := C.CString(key)
+	metex.Lock()
 	res := int(C.Incr(ckey, keylen))
+	metex.Unlock()
 	C.free(unsafe.Pointer(ckey))
 	return res
 }
@@ -209,10 +203,10 @@ func Decr(key string) int {
 	if keylen == 0 {
 		return -1
 	}
-	metex.Lock()
-	defer metex.Unlock()
 	ckey := C.CString(key)
+	metex.Lock()
 	res := int(C.Decr(ckey, keylen))
+	metex.Unlock()
 	C.free(unsafe.Pointer(ckey))
 	return res
 }
