@@ -28,11 +28,11 @@ func Get(key string) (interface{}, int)
 返回定义：0代表成功；-1代表key长度为0；  
 func Del(key string) int  
 
-对象自动加1，如果对象不存在，会创建一个C.int型的对象，赋值为1  
+对象自动加1，如果对象不存在，会创建一个int64型的对象，赋值为1  
 返回定义：0代表成功；-1代表key长度为0；  
 func Incr(key string) int  
 
-对象自动减1，如果对象不存在，会创建一个C.int型的对象，赋值为-1  
+对象自动减1，如果对象不存在，会创建一个int64型的对象，赋值为-1  
 返回定义：0代表成功；-1代表key长度为0；  
 func Decr(key string) int  
 
@@ -45,4 +45,5 @@ go get github.com/worldflyingct/mnsql
 go mod tidy  
 
 # 关于datatype
-因为存储在内存中仅仅是通过char*的通用格式进行保存的，所以并没有存储数据类型的方法，特意保留一个字段用来记录数据类型，如果使用c进行调用，不是一定要使用，但是由于incr与decr在key不存在时会创建int类型的数据，因此定义int类型为0，其他随意。  
+因为存储在内存中仅仅是通过char*的通用格式进行保存的，所以并没有存储数据类型的方法，特意保留一个字段用来记录数据类型，如果使用c进行调用，不是一定要使用。  
+但是由于incr与decr在key不存在时会创建int64类型的数据，并保存datatype为9，使用时请注意。  

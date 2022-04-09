@@ -42,11 +42,9 @@ func cSet(key string, cdata unsafe.Pointer, datalen uint, ttl int, settype int, 
 func _Set(key string, value interface{}, ttl int, settype int) int {
 	switch data := value.(type) {
 	case int:
-		cdata := C.int(data)
-		return cSet(key, unsafe.Pointer(&cdata), uint(unsafe.Sizeof(cdata)), ttl, settype, 0)
+		return cSet(key, unsafe.Pointer(&data), uint(unsafe.Sizeof(data)), ttl, settype, 0)
 	case uint:
-		cdata := C.uint(data)
-		return cSet(key, unsafe.Pointer(&cdata), uint(unsafe.Sizeof(cdata)), ttl, settype, 1)
+		return cSet(key, unsafe.Pointer(&data), uint(unsafe.Sizeof(data)), ttl, settype, 1)
 	case bool:
 		return cSet(key, unsafe.Pointer(&data), 1, ttl, settype, 2)
 	case int8:

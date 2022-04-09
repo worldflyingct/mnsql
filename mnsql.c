@@ -185,8 +185,8 @@ int Incr(const char *mkey, unsigned int keylen)
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
     {
-        int n = 1;
-        return AddKey(mkey, keylen, &n, sizeof(int), -1, 0);
+        int64_t n = 1;
+        return AddKey(mkey, keylen, &n, sizeof(int64_t), -1, 9);
     }
     unsigned int datalen = param->datalen;
     if (datalen == sizeof(char))
@@ -227,8 +227,8 @@ int Decr(char *mkey, unsigned int keylen)
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
     {
-        int n = -1;
-        return AddKey(mkey, keylen, &n, sizeof(int), -1, 0);
+        int64_t n = -1;
+        return AddKey(mkey, keylen, &n, sizeof(int64_t), -1, 9);
     }
     unsigned int datalen = param->datalen;
     if (datalen == sizeof(char))
