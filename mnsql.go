@@ -237,6 +237,19 @@ func DecrBy(key string, num int64) int {
 	return res
 }
 
+func Expire(key string, ttl int64) int {
+	keylen := C.uint64_t(len(key))
+	if keylen == 0 {
+		return C.KEYLENZERO
+	}
+	ckey := C.CString(key)
+	metex.Lock()
+	res := int(C.Expire(ckey, keylen, C.int64_t(ttl)))
+	metex.Unlock()
+	C.free(unsafe.Pointer(ckey))
+	return res
+}
+
 func cPush(key string, cdata unsafe.Pointer, datalen C.uint64_t, settype int, datatype C.int) int {
 	keylen := C.uint64_t(len(key))
 	if keylen == 0 {

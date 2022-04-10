@@ -2,8 +2,6 @@
 #include <string.h>
 #include <time.h>
 
-#include <stdio.h>
-
 struct SINGLE
 {
     int datatype;

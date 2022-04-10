@@ -8,8 +8,8 @@
 #define KEYLENZERO -1
 #define DATANULL -2
 #define TYPEERROR -3
-#define WRITEDENY -5
-#define MALLOCFAIL -6
+#define WRITEDENY -4
+#define MALLOCFAIL -5
 
 #ifdef __cplusplus
 extern "C"

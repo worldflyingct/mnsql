@@ -12,12 +12,12 @@ func Set(key string, value interface{}) int
 func SetEx(key string, value interface{}) int  
 
 写入对象，但是如果存在相同的key则不写入  
-返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；  
+返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；-4代表已经存在相同key的对象，写入失败  
 func SetNx(key string, value interface{}) int  
 
 写入有生命期的对象，生命期消失后数据自动消失  
 如果存在相同的key则不写入  
-返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；  
+返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；-4代表已经存在相同key的对象，写入失败  
 func SetNex(key string, value interface{}, ttl int) int  
 
 读取对象  
@@ -35,6 +35,34 @@ func Incr(key string) int
 对象自动减1，如果对象不存在，会创建一个int64型的对象，赋值为-1  
 返回定义：0代表成功；-1代表key长度为0；  
 func Decr(key string) int  
+
+对象自动加num，如果对象不存在，会创建一个int64型的对象，赋值为num  
+返回定义：0代表成功；-1代表key长度为0；  
+func IncrBy(key string, num int64) int  
+
+对象自动减num，如果对象不存在，会创建一个int64型的对象，赋值为-num  
+返回定义：0代表成功；-1代表key长度为0；  
+func DecrBy(key string, num int64) int  
+
+设置对象的生命期，ttl如果为-1则是永久存在  
+返回定义：0代表成功；-1代表key长度为0；-2代表对象不存在；  
+func Expire(key string, ttl int64) int  
+
+从左边推入list，如果不存在则创建  
+返回定义：0代表成功；-1代表key长度为0；-3代表对象类型错误；  
+func Lpush(key string, value interface{}) int  
+
+从左边取出list  
+返回定义：0代表成功；-1代表key长度为0；-2代表对象不存在；-3代表对象类型错误；  
+func Lpop(key string) (interface{}, int)  
+
+从右边推入list，如果不存在则创建  
+返回定义：0代表成功；-1代表key长度为0；-3代表对象类型错误；  
+func Rpush(key string, value interface{}) int  
+
+从右边取出list  
+返回定义：0代表成功；-1代表key长度为0；-2代表对象不存在；-3代表对象类型错误；  
+func Rpop(key string) (interface{}, int)  
 
 # 使用方法  
 在需要使用的对象中  
