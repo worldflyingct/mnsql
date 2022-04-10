@@ -16,21 +16,21 @@ extern "C"
 {
 #endif
 
-    int Set(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype);
-    int SetEx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype);
-    int SetNx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype);
-    int SetNex(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype);
-    int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, int *datatype);
-    int Del(const char *mkey, unsigned int keylen);
-    int Incr(const char *mkey, unsigned int keylen);
-    int IncrBy(const char *mkey, unsigned int keylen, int64_t num);
-    int Decr(const char *mkey, unsigned int keylen);
-    int DecrBy(const char *mkey, unsigned int keylen, int64_t num);
-    int Expire(const char *mkey, unsigned int keylen, int ttl);
-    int Lpop(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, int *datatype);
-    int Rpop(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, int *datatype);
-    int Lpush(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype);
-    int Rpush(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype);
+    int Set(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype);
+    int SetEx(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype);
+    int SetNx(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype);
+    int SetNex(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype);
+    int64_t Get(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype);
+    int Del(const char *mkey, uint64_t keylen);
+    int Incr(const char *mkey, uint64_t keylen);
+    int IncrBy(const char *mkey, uint64_t keylen, int64_t num);
+    int Decr(const char *mkey, uint64_t keylen);
+    int DecrBy(const char *mkey, uint64_t keylen, int64_t num);
+    int Expire(const char *mkey, uint64_t keylen, int64_t ttl);
+    int Lpush(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype);
+    int64_t Lpop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype);
+    int Rpush(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype);
+    int64_t Rpop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype);
 
 #ifdef __cplusplus
 }

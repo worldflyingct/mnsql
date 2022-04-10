@@ -8,13 +8,13 @@ struct SINGLE
 {
     int datatype;
     void *data;
-    unsigned int datalen;
+    uint64_t datalen;
 };
 
 struct List
 {
     char *data;
-    unsigned int datalen;
+    uint64_t datalen;
     int datatype;
     struct List *head;
     struct List *tail;
@@ -23,10 +23,10 @@ struct List
 struct PARAM
 {
     char *key;
-    unsigned int keylen;
+    uint64_t keylen;
     int type;
     void *value;
-    unsigned int deadline;
+    uint64_t deadline;
     struct PARAM *tail;
 };
 struct PARAM *globalparam[256];
@@ -69,13 +69,13 @@ void FreeItem(struct PARAM *param)
     }
 }
 
-struct PARAM *FindKey(const char *mkey, unsigned int keylen)
+struct PARAM *FindKey(const char *mkey, uint64_t keylen)
 {
     if (keylen == 0)
     {
         return NULL;
     }
-    unsigned int hash = mkey[0];
+    uint8_t hash = mkey[0];
     struct PARAM *param = globalparam[hash];
     struct PARAM *beforeparam = NULL;
     while (param != NULL)
@@ -85,7 +85,7 @@ struct PARAM *FindKey(const char *mkey, unsigned int keylen)
         {
             struct PARAM *p = param;
             param = param->tail;
-            unsigned int hash = mkey[0];
+            uint8_t hash = mkey[0];
             if (beforeparam != NULL)
             {
                 beforeparam->tail = param;
@@ -115,7 +115,7 @@ struct PARAM *FindKey(const char *mkey, unsigned int keylen)
     return NULL;
 }
 
-int AddSingleKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype)
+int AddSingleKey(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype)
 {
     if (keylen == 0)
     {
@@ -125,7 +125,7 @@ int AddSingleKey(const char *mkey, unsigned int keylen, const void *mdata, unsig
     {
         return DATANULL;
     }
-    unsigned int hash = mkey[0];
+    uint8_t hash = mkey[0];
     char *key = (char *)malloc(keylen);
     if (key == NULL)
     {
@@ -175,24 +175,24 @@ int AddSingleKey(const char *mkey, unsigned int keylen, const void *mdata, unsig
     return RUNSUCCESS;
 }
 
-int SetEx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype)
+int SetEx(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param != NULL)
     {
-        unsigned int hash = param->key[0];
+        uint8_t hash = param->key[0];
         globalparam[hash] = param->tail;
         FreeItem(param);
     }
     return AddSingleKey(mkey, keylen, mdata, datalen, ttl, datatype);
 }
 
-int Set(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype)
+int Set(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
 {
     return SetEx(mkey, keylen, mdata, datalen, -1, datatype);
 }
 
-int SetNx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype)
+int SetNx(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
 {
     if (FindKey(mkey, keylen) != NULL)
     {
@@ -201,7 +201,7 @@ int SetNx(const char *mkey, unsigned int keylen, const void *mdata, unsigned int
     return AddSingleKey(mkey, keylen, mdata, datalen, -1, datatype);
 }
 
-int SetNex(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int ttl, int datatype)
+int SetNex(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype)
 {
     if (FindKey(mkey, keylen) != NULL)
     {
@@ -210,7 +210,7 @@ int SetNex(const char *mkey, unsigned int keylen, const void *mdata, unsigned in
     return AddSingleKey(mkey, keylen, mdata, datalen, ttl, datatype);
 }
 
-int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, int *datatype)
+int64_t Get(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
@@ -224,7 +224,7 @@ int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datale
     struct SINGLE *item = param->value;
     *datatype = item->datatype;
     int len = item->datalen;
-    unsigned int dlen = item->datalen > *datalen ? *datalen : item->datalen;
+    uint64_t dlen = item->datalen > *datalen ? *datalen : item->datalen;
     if (dlen > 0 && mdata != NULL)
     {
         memcpy(mdata, item->data, dlen);
@@ -233,25 +233,25 @@ int Get(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datale
     return len;
 }
 
-int Del(const char *mkey, unsigned int keylen)
+int Del(const char *mkey, uint64_t keylen)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param != NULL)
     {
         return DATANULL;
     }
-    unsigned int hash = param->key[0];
+    uint8_t hash = param->key[0];
     globalparam[hash] = param->tail;
     FreeItem(param);
     return RUNSUCCESS;
 }
 
-int Incr(const char *mkey, unsigned int keylen)
+int Incr(const char *mkey, uint64_t keylen)
 {
     return IncrBy(mkey, keylen, 1);
 }
 
-int IncrBy(const char *mkey, unsigned int keylen, int64_t num)
+int IncrBy(const char *mkey, uint64_t keylen, int64_t num)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
@@ -260,7 +260,7 @@ int IncrBy(const char *mkey, unsigned int keylen, int64_t num)
         return AddSingleKey(mkey, keylen, &n, sizeof(int64_t), -1, 9);
     }
     struct SINGLE *item = param->value;
-    unsigned int datalen = item->datalen;
+    uint64_t datalen = item->datalen;
     if (datalen == sizeof(char))
     {
         char n = *(char *)item->data;
@@ -294,12 +294,12 @@ int IncrBy(const char *mkey, unsigned int keylen, int64_t num)
     return RUNSUCCESS;
 }
 
-int Decr(const char *mkey, unsigned int keylen)
+int Decr(const char *mkey, uint64_t keylen)
 {
     return DecrBy(mkey, keylen, 1);
 }
 
-int DecrBy(const char *mkey, unsigned int keylen, int64_t num)
+int DecrBy(const char *mkey, uint64_t keylen, int64_t num)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
@@ -308,7 +308,7 @@ int DecrBy(const char *mkey, unsigned int keylen, int64_t num)
         return AddSingleKey(mkey, keylen, &n, sizeof(int64_t), -1, 9);
     }
     struct SINGLE *single = param->value;
-    unsigned int datalen = single->datalen;
+    uint64_t datalen = single->datalen;
     if (datalen == sizeof(char))
     {
         char n = *(char *)single->data;
@@ -342,7 +342,7 @@ int DecrBy(const char *mkey, unsigned int keylen, int64_t num)
     return RUNSUCCESS;
 }
 
-int Expire(const char *mkey, unsigned int keylen, int ttl)
+int Expire(const char *mkey, uint64_t keylen, int64_t ttl)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
@@ -361,7 +361,7 @@ int Expire(const char *mkey, unsigned int keylen, int ttl)
     return RUNSUCCESS;
 }
 
-struct List *CreateList(const void *mdata, unsigned int datalen, int datatype)
+struct List *CreateList(const void *mdata, uint64_t datalen, int datatype)
 {
     char *data = (char *)malloc(datalen);
     if (data == NULL)
@@ -380,7 +380,7 @@ struct List *CreateList(const void *mdata, unsigned int datalen, int datatype)
     return item;
 }
 
-int AddListKey(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype)
+int AddListKey(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
 {
     if (keylen == 0)
     {
@@ -427,13 +427,13 @@ int AddListKey(const char *mkey, unsigned int keylen, const void *mdata, unsigne
     param->value = listdesc;
     param->deadline = -1;
     param->type = 1;
-    unsigned int hash = mkey[0];
+    uint8_t hash = mkey[0];
     param->tail = globalparam[hash];
     globalparam[hash] = param;
     return RUNSUCCESS;
 }
 
-int Lpush(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype)
+int Lpush(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
@@ -458,7 +458,45 @@ int Lpush(const char *mkey, unsigned int keylen, const void *mdata, unsigned int
     return RUNSUCCESS;
 }
 
-int Rpush(const char *mkey, unsigned int keylen, const void *mdata, unsigned int datalen, int datatype)
+int64_t Lpop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype)
+{
+    struct PARAM *param = FindKey(mkey, keylen);
+    if (param == NULL)
+    {
+        return DATANULL;
+    }
+    if (param->type != 1)
+    {
+        return TYPEERROR;
+    }
+    struct List **listdesc = (struct List **)param->value;
+    struct List *item = listdesc[0];
+    *datatype = item->datatype;
+    uint64_t len = item->datalen;
+    uint64_t dlen = item->datalen > *datalen ? *datalen : item->datalen;
+    if (dlen > 0 && mdata != NULL)
+    {
+        memcpy(mdata, item->data, dlen);
+        *datalen = dlen;
+        if (listdesc[0] == listdesc[1]) // 只有一个对象
+        {
+            uint8_t hash = mkey[0];
+            globalparam[hash] = param->tail;
+            free(param->value);
+            free(param->key);
+            free(param);
+        }
+        else
+        {
+            listdesc[0] = item->tail;
+        }
+        free(item->data);
+        free(item);
+    }
+    return len;
+}
+
+int Rpush(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
@@ -483,45 +521,7 @@ int Rpush(const char *mkey, unsigned int keylen, const void *mdata, unsigned int
     return RUNSUCCESS;
 }
 
-int Lpop(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, int *datatype)
-{
-    struct PARAM *param = FindKey(mkey, keylen);
-    if (param == NULL)
-    {
-        return DATANULL;
-    }
-    if (param->type != 1)
-    {
-        return TYPEERROR;
-    }
-    struct List **listdesc = (struct List **)param->value;
-    struct List *item = listdesc[0];
-    *datatype = item->datatype;
-    int len = item->datalen;
-    unsigned int dlen = item->datalen > *datalen ? *datalen : item->datalen;
-    if (dlen > 0 && mdata != NULL)
-    {
-        memcpy(mdata, item->data, dlen);
-        *datalen = dlen;
-        if (listdesc[0] == listdesc[1]) // 只有一个对象
-        {
-            unsigned int hash = mkey[0];
-            globalparam[hash] = param->tail;
-            free(param->value);
-            free(param->key);
-            free(param);
-        }
-        else
-        {
-            listdesc[0] = item->tail;
-        }
-        free(item->data);
-        free(item);
-    }
-    return len;
-}
-
-int Rpop(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datalen, int *datatype)
+int64_t Rpop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype)
 {
     struct PARAM *param = FindKey(mkey, keylen);
     if (param == NULL)
@@ -534,16 +534,16 @@ int Rpop(const char *mkey, unsigned int keylen, void *mdata, unsigned int *datal
     }
     struct List **listdesc = (struct List **)param->value;
     struct List *item = listdesc[1];
-    unsigned int dlen = item->datalen > *datalen ? *datalen : item->datalen;
     *datatype = item->datatype;
-    int len = item->datalen;
+    uint64_t len = item->datalen;
+    uint64_t dlen = item->datalen > *datalen ? *datalen : item->datalen;
     if (dlen > 0 && mdata != NULL)
     {
         memcpy(mdata, item->data, dlen);
         *datalen = dlen;
         if (listdesc[0] == listdesc[1]) // 只有一个对象
         {
-            unsigned int hash = mkey[0];
+            uint8_t hash = mkey[0];
             globalparam[hash] = param->tail;
             free(param->value);
             free(param->key);
