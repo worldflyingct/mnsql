@@ -262,9 +262,9 @@ func cPush(key string, cdata unsafe.Pointer, datalen C.uint64_t, settype int, da
 	ckey := C.CString(key)
 	metex.Lock()
 	if settype == 0 {
-		res = int(C.Lpush(ckey, keylen, cdata, datalen, datatype))
+		res = int(C.LPush(ckey, keylen, cdata, datalen, datatype))
 	} else if settype == 1 {
-		res = int(C.Rpush(ckey, keylen, cdata, datalen, datatype))
+		res = int(C.RPush(ckey, keylen, cdata, datalen, datatype))
 	}
 	metex.Unlock()
 	C.free(unsafe.Pointer(ckey))
@@ -314,11 +314,11 @@ func _Push(key string, value interface{}, settype int) int {
 	return C.TYPEERROR
 }
 
-func Lpush(key string, value interface{}) int {
+func LPush(key string, value interface{}) int {
 	return _Push(key, value, 0)
 }
 
-func Rpush(key string, value interface{}) int {
+func RPush(key string, value interface{}) int {
 	return _Push(key, value, 1)
 }
 
@@ -335,9 +335,9 @@ func _Pop(key string, settype int) (interface{}, int) {
 	metex.Lock()
 	defer metex.Unlock()
 	if settype == 0 {
-		res = int64(C.Lpop(ckey, keylen, nil, &datalen, &datatype))
+		res = int64(C.LPop(ckey, keylen, nil, &datalen, &datatype))
 	} else if settype == 1 {
-		res = int64(C.Rpop(ckey, keylen, nil, &datalen, &datatype))
+		res = int64(C.RPop(ckey, keylen, nil, &datalen, &datatype))
 	}
 	if res < 0 {
 		return nil, int(res)
@@ -347,147 +347,402 @@ func _Pop(key string, settype int) (interface{}, int) {
 	case 0:
 		var cdata int
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 1:
 		var cdata uint
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 2:
 		var cdata bool
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 3:
 		var cdata int8
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 4:
 		var cdata uint8
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 5:
 		var cdata int16
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 6:
 		var cdata uint16
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 7:
 		var cdata int32
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 8:
 		var cdata uint32
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 9:
 		var cdata int64
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 10:
 		var cdata uint64
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 11:
 		var cdata float32
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 12:
 		var cdata float64
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 13:
 		var cdata complex64
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 14:
 		var cdata complex128
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata), &datalen, &datatype)
 		}
 		return cdata, 0
 	case 15:
 		cdata := make([]byte, datalen)
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
 		}
 		return string(cdata), 0
 	case 16:
 		cdata := make([]byte, datalen)
 		if settype == 0 {
-			C.Lpop(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
+			C.LPop(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
 		} else if settype == 1 {
-			C.Rpop(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
+			C.RPop(ckey, keylen, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
 		}
 		return cdata, 0
 	}
 	return nil, C.TYPEERROR
 }
 
-func Lpop(key string) (interface{}, int) {
+func LPop(key string) (interface{}, int) {
 	return _Pop(key, 0)
 }
 
-func Rpop(key string) (interface{}, int) {
+func RPop(key string) (interface{}, int) {
 	return _Pop(key, 1)
+}
+
+func cHSet(key string, key2 string, cdata unsafe.Pointer, datalen uint64, ttl int64, settype int, datatype int) int {
+	keylen := C.uint64_t(len(key))
+	keylen2 := C.uint64_t(len(key2))
+	if keylen == 0 || keylen2 == 0 {
+		return C.KEYLENZERO
+	}
+	if datalen == 0 {
+		return C.DATANULL
+	}
+	var res int
+	ckey := C.CString(key)
+	ckey2 := C.CString(key2)
+	metex.Lock()
+	switch settype {
+	case 0:
+		res = int(C.HSet(ckey, keylen, ckey2, keylen2, cdata, C.uint64_t(datalen), C.int(datatype)))
+	case 1:
+		res = int(C.HSetEx(ckey, keylen, ckey2, keylen2, cdata, C.uint64_t(datalen), C.int64_t(ttl), C.int(datatype)))
+	case 2:
+		res = int(C.HSetNx(ckey, keylen, ckey2, keylen2, cdata, C.uint64_t(datalen), C.int(datatype)))
+	case 3:
+		res = int(C.HSetNex(ckey, keylen, ckey2, keylen2, cdata, C.uint64_t(datalen), C.int64_t(ttl), C.int(datatype)))
+	}
+	metex.Unlock()
+	C.free(unsafe.Pointer(ckey2))
+	C.free(unsafe.Pointer(ckey))
+	return res
+}
+
+func _HSet(key string, key2 string, value interface{}, ttl int64, settype int) int {
+	switch data := value.(type) {
+	case int:
+		return cHSet(key, key2, unsafe.Pointer(&data), uint64(unsafe.Sizeof(data)), ttl, settype, 0)
+	case uint:
+		return cHSet(key, key2, unsafe.Pointer(&data), uint64(unsafe.Sizeof(data)), ttl, settype, 1)
+	case bool:
+		return cHSet(key, key2, unsafe.Pointer(&data), 1, ttl, settype, 2)
+	case int8:
+		return cHSet(key, key2, unsafe.Pointer(&data), 1, ttl, settype, 3)
+	case uint8:
+		return cHSet(key, key2, unsafe.Pointer(&data), 1, ttl, settype, 4)
+	case int16:
+		return cHSet(key, key2, unsafe.Pointer(&data), 2, ttl, settype, 5)
+	case uint16:
+		return cHSet(key, key2, unsafe.Pointer(&data), 2, ttl, settype, 6)
+	case int32:
+		return cHSet(key, key2, unsafe.Pointer(&data), 4, ttl, settype, 7)
+	case uint32:
+		return cHSet(key, key2, unsafe.Pointer(&data), 4, ttl, settype, 8)
+	case int64:
+		return cHSet(key, key2, unsafe.Pointer(&data), 8, ttl, settype, 9)
+	case uint64:
+		return cHSet(key, key2, unsafe.Pointer(&data), 8, ttl, settype, 10)
+	case float32:
+		return cHSet(key, key2, unsafe.Pointer(&data), 4, ttl, settype, 11)
+	case float64:
+		return cHSet(key, key2, unsafe.Pointer(&data), 8, ttl, settype, 12)
+	case complex64:
+		return cHSet(key, key2, unsafe.Pointer(&data), 8, ttl, settype, 13)
+	case complex128:
+		return cHSet(key, key2, unsafe.Pointer(&data), 16, ttl, settype, 14)
+	case string:
+		cdata := unsafe.Pointer(C.CString(data))
+		res := cHSet(key, key2, cdata, uint64(len(data)), ttl, settype, 15)
+		C.free(cdata)
+		return res
+	case []byte:
+		return cHSet(key, key2, unsafe.Pointer(&data[0]), uint64(len(data)), ttl, settype, 16)
+	}
+	return C.TYPEERROR
+}
+
+// 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
+func HSet(key string, key2 string, value interface{}) int {
+	return _HSet(key, key2, value, -1, 0)
+}
+
+// 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
+func HSetEx(key string, key2 string, value interface{}, ttl int64) int {
+	return _HSet(key, key2, value, ttl, 1)
+}
+
+// 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；
+func HSetNx(key string, key2 string, value interface{}) int {
+	return _HSet(key, key2, value, -1, 2)
+}
+
+func HSetNex(key string, key2 string, value interface{}, ttl int64) int {
+	return _HSet(key, key2, value, ttl, 3)
+}
+
+func HGet(key string, key2 string) (interface{}, int) {
+	keylen := C.uint64_t(len(key))
+	keylen2 := C.uint64_t(len(key2))
+	if keylen == 0 || keylen2 == 0 {
+		return nil, C.KEYLENZERO
+	}
+	var datatype C.int
+	datalen := C.uint64_t(0)
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	ckey2 := C.CString(key2)
+	defer C.free(unsafe.Pointer(ckey2))
+	metex.Lock()
+	defer metex.Unlock()
+	res := int64(C.HGet(ckey, keylen, ckey2, keylen2, nil, &datalen, &datatype))
+	if res < 0 {
+		return nil, int(res)
+	}
+	datalen = C.uint64_t(res)
+	switch datatype {
+	case 0:
+		var cdata int
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 1:
+		var cdata uint
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 2:
+		var cdata bool
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 3:
+		var cdata int8
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 4:
+		var cdata uint8
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 5:
+		var cdata int16
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 6:
+		var cdata uint16
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 7:
+		var cdata int32
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 8:
+		var cdata uint32
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 9:
+		var cdata int64
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 10:
+		var cdata uint64
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 11:
+		var cdata float32
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 12:
+		var cdata float64
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 13:
+		var cdata complex64
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 14:
+		var cdata complex128
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata), &datalen, &datatype)
+		return cdata, 0
+	case 15:
+		cdata := make([]byte, datalen)
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
+		return string(cdata), 0
+	case 16:
+		cdata := make([]byte, datalen)
+		C.HGet(ckey, keylen, ckey2, keylen2, unsafe.Pointer(&cdata[0]), &datalen, &datatype)
+		return cdata, 0
+	}
+	return nil, C.TYPEERROR
+}
+
+func HDel(key string, key2 string) int {
+	keylen := C.uint64_t(len(key))
+	keylen2 := C.uint64_t(len(key2))
+	if keylen == 0 || keylen2 == 0 {
+		return C.KEYLENZERO
+	}
+	ckey := C.CString(key)
+	ckey2 := C.CString(key2)
+	metex.Lock()
+	res := int(C.HDel(ckey, keylen, ckey2, keylen2))
+	metex.Unlock()
+	C.free(unsafe.Pointer(ckey2))
+	C.free(unsafe.Pointer(ckey))
+	return res
+}
+
+func HIncr(key string, key2 string) int {
+	return HIncrBy(key, key2, 1)
+}
+
+func HIncrBy(key string, key2 string, num int64) int {
+	keylen := C.uint64_t(len(key))
+	keylen2 := C.uint64_t(len(key2))
+	if keylen == 0 || keylen2 == 0 {
+		return C.KEYLENZERO
+	}
+	ckey := C.CString(key)
+	ckey2 := C.CString(key2)
+	metex.Lock()
+	res := int(C.HIncrBy(ckey, keylen, ckey2, keylen2, C.int64_t(num)))
+	metex.Unlock()
+	C.free(unsafe.Pointer(ckey2))
+	C.free(unsafe.Pointer(ckey))
+	return res
+}
+
+func HDecr(key string, key2 string) int {
+	return HDecrBy(key, key2, 1)
+}
+
+func HDecrBy(key string, key2 string, num int64) int {
+	keylen := C.uint64_t(len(key))
+	keylen2 := C.uint64_t(len(key2))
+	if keylen == 0 || keylen2 == 0 {
+		return C.KEYLENZERO
+	}
+	ckey := C.CString(key)
+	ckey2 := C.CString(key2)
+	metex.Lock()
+	res := int(C.HDecrBy(ckey, keylen, ckey2, keylen2, C.int64_t(num)))
+	metex.Unlock()
+	C.free(unsafe.Pointer(ckey2))
+	C.free(unsafe.Pointer(ckey))
+	return res
+}
+
+func HExpire(key string, key2 string, ttl int64) int {
+	keylen := C.uint64_t(len(key))
+	keylen2 := C.uint64_t(len(key2))
+	if keylen == 0 || keylen2 == 0 {
+		return C.KEYLENZERO
+	}
+	ckey := C.CString(key)
+	ckey2 := C.CString(key2)
+	metex.Lock()
+	res := int(C.HExpire(ckey, keylen, ckey2, keylen2, C.int64_t(ttl)))
+	metex.Unlock()
+	C.free(unsafe.Pointer(ckey2))
+	C.free(unsafe.Pointer(ckey))
+	return res
 }

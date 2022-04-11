@@ -1,6 +1,9 @@
 # mnsql是memory nosql
 仅仅使用mnsql.c与mnsql.h即可。  
 
+# 数据类型
+提供String类型以及List，Hash类型即将推出  
+
 # 存在如下函数
 写入对象，但是如果存在相同的则覆盖写入  
 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；  
@@ -50,19 +53,19 @@ func Expire(key string, ttl int64) int
 
 从左边推入list，如果不存在则创建  
 返回定义：0代表成功；-1代表key长度为0；-3代表对象类型错误；  
-func Lpush(key string, value interface{}) int  
+func LPush(key string, value interface{}) int  
 
 从左边取出list  
 返回定义：0代表成功；-1代表key长度为0；-2代表对象不存在；-3代表对象类型错误；  
-func Lpop(key string) (interface{}, int)  
+func LPop(key string) (interface{}, int)  
 
 从右边推入list，如果不存在则创建  
 返回定义：0代表成功；-1代表key长度为0；-3代表对象类型错误；  
-func Rpush(key string, value interface{}) int  
+func RPush(key string, value interface{}) int  
 
 从右边取出list  
 返回定义：0代表成功；-1代表key长度为0；-2代表对象不存在；-3代表对象类型错误；  
-func Rpop(key string) (interface{}, int)  
+func RPop(key string) (interface{}, int)  
 
 # 使用方法  
 在需要使用的对象中  
