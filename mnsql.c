@@ -763,10 +763,6 @@ int64_t HGet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keyl
     struct Map *item = FindMap(param, mkey2, keylen2, now);
     if (item == NULL)
     {
-        if (fp == NULL)
-            fp = fopen("logfile.log", "wb");
-        fprintf(fp, "in %s,at %d\n", __FILE__, __LINE__);
-        fflush(fp);
         return DATANULL;
     }
     *datatype = item->datatype;

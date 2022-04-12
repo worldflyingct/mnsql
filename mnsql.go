@@ -7,6 +7,10 @@ package mnsql
 import "C"
 
 import (
+	"bufio"
+	"fmt"
+	"net"
+	"strings"
 	"sync"
 	"unsafe"
 )
@@ -745,4 +749,76 @@ func HExpire(key string, key2 string, ttl int64) int {
 	C.free(unsafe.Pointer(ckey2))
 	C.free(unsafe.Pointer(ckey))
 	return res
+}
+
+func StartCmdLineServer(port uint16) (net.Listener, error) {
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return nil, err
+	}
+	go func(ln net.Listener) {
+		fmt.Println("CmdLine Server Start")
+		for {
+			conn, err := ln.Accept()
+			if err != nil {
+				fmt.Println(err.Error())
+				break
+			}
+			go cmdLineHandle(conn, ln)
+		}
+		ln.Close()
+		fmt.Println("CmdLine Server Stop")
+	}(ln)
+	return ln, nil
+}
+
+func cmdLineHandle(conn net.Conn, ln net.Listener) error {
+	defer conn.Close()
+	in := bufio.NewReader(conn)
+	for {
+		dat, _, err := in.ReadLine()
+		if err != nil {
+			fmt.Println(err.Error())
+			return err
+		}
+		cmd := strings.Split(string(dat), " ")
+		cmdlen := len(cmd)
+		if cmdlen > 0 {
+			switch cmd[0] {
+			case "get":
+				if cmdlen > 1 {
+					fmt.Println(cmd)
+					v, r := Get(cmd[1])
+					fmt.Fprintln(conn, v, r)
+				}
+			case "hget":
+				if cmdlen > 2 {
+					v, r := HGet(cmd[1], cmd[2])
+					fmt.Fprintln(conn, v, r)
+				}
+			case "listget":
+				if cmdlen > 1 {
+					arr := make([]interface{}, 0)
+					for {
+						v, r := RPop(cmd[1])
+						if r == 0 {
+							arr = append(arr, v)
+							fmt.Fprintln(conn, v)
+						} else {
+							break
+						}
+					}
+					arrlen := len(arr)
+					for i := 0; i < arrlen; i++ {
+						LPush(cmd[1], arr[i])
+					}
+				}
+			case "exit":
+				return nil
+			case "closeserver":
+				ln.Close()
+			}
+		}
+	}
+	return nil
 }
