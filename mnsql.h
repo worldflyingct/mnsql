@@ -16,37 +16,40 @@ extern "C"
 {
 #endif
 
-    int Set(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype);
-    int SetEx(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype);
-    int SetNx(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype);
-    int SetNex(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype);
-    int64_t Get(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype);
+    int Set(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype);
+    int SetEx(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int64_t ttl, int datatype);
+    int SetNx(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype);
+    int SetNex(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int64_t ttl, int datatype);
+    void *Get(const char *mkey, uint64_t keylen, int *datalen, int *datatype, int *res);
     int Del(const char *mkey, uint64_t keylen);
     int Incr(const char *mkey, uint64_t keylen);
     int IncrBy(const char *mkey, uint64_t keylen, int64_t num);
     int Decr(const char *mkey, uint64_t keylen);
     int DecrBy(const char *mkey, uint64_t keylen, int64_t num);
     int Expire(const char *mkey, uint64_t keylen, int64_t ttl);
-    int LPush(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype);
-    int64_t LPop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype);
-    int RPush(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype);
-    int64_t RPop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype);
-    int HSet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata,
-             uint64_t datalen, int datatype);
-    int HSetEx(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata,
-               uint64_t datalen, int64_t ttl, int datatype);
-    int HSetNx(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata,
-               uint64_t datalen, int datatype);
-    int HSetNex(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata,
-                uint64_t datalen, int64_t ttl, int datatype);
-    int64_t HGet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, void *mdata, uint64_t *datalen,
-                 int *datatype);
+    int LPush(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype);
+    void *LPop(const char *mkey, uint64_t keylen, int *datalen, int *datatype, int *res);
+    int RPush(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype);
+    void *RPop(const char *mkey, uint64_t keylen, int *datalen, int *datatype, int *res);
+    int HSet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
+             int datatype);
+    int HSetEx(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
+               int64_t ttl, int datatype);
+    int HSetNx(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
+               int datatype);
+    int HSetNex(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
+                int64_t ttl, int datatype);
+    void *HGet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, int *datalen, int *datatype,
+               int *res);
     int HDel(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2);
     int HIncr(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2);
     int HIncrBy(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, int64_t num);
     int HDecr(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2);
     int HDecrBy(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, int64_t num);
     int HExpire(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, int64_t ttl);
+    char *Keys(int *datalen, int *res);
+    char *Lrange(char *mkey, uint64_t keylen, int *datalen, int *res);
+    char *HKeys(char *mkey, uint64_t keylen, int *datalen, int *res);
 
 #ifdef __cplusplus
 }

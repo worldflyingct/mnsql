@@ -1,18 +1,39 @@
 #include "mnsql.h"
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
+
+// #define DEBUG
+#ifdef DEBUG
+
+#include <stdarg.h>
+
+FILE *fp = NULL;
+void debug_printf(char *fmt, ...)
+{
+    if (fp == NULL)
+    {
+        fp = fopen("logfile.log", "wb");
+    }
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(fp, fmt, args);
+    va_end(args);
+    fflush(fp);
+}
+#endif
 
 struct SINGLE
 {
     int datatype;
     void *data;
-    uint64_t datalen;
+    int datalen;
 };
 
 struct List
 {
     void *data;
-    uint64_t datalen;
+    int datalen;
     int datatype;
     struct List *head;
     struct List *tail;
@@ -23,9 +44,9 @@ struct Map
     char *key;
     uint64_t keylen;
     void *data;
-    uint64_t datalen;
+    int datalen;
     int datatype;
-    uint64_t deadline;
+    time_t deadline;
     struct Map *tail;
 };
 
@@ -35,7 +56,7 @@ struct PARAM
     uint64_t keylen;
     int8_t type;
     void *value;
-    uint64_t deadline;
+    time_t deadline;
     struct PARAM *tail;
 };
 struct PARAM *globalparam[256];
@@ -98,11 +119,16 @@ struct PARAM *FindKey(const char *mkey, uint64_t keylen, time_t now)
     struct PARAM *beforeparam = NULL;
     while (param != NULL)
     {
-        if (now > param->deadline)
+#ifdef DEBUG
+        debug_printf("in %s, at %d\n", __FILE__, __LINE__);
+#endif
+        if (param->deadline != -1 && now > param->deadline)
         {
+#ifdef DEBUG
+            debug_printf("in %s, at %d\n", __FILE__, __LINE__);
+#endif
             struct PARAM *p = param;
             param = param->tail;
-            uint8_t hash = mkey[0];
             if (beforeparam != NULL)
             {
                 beforeparam->tail = param;
@@ -115,6 +141,9 @@ struct PARAM *FindKey(const char *mkey, uint64_t keylen, time_t now)
         }
         else if (param->keylen == keylen && !memcmp(param->key, mkey, keylen))
         {
+#ifdef DEBUG
+            debug_printf("in %s, at %d\n", __FILE__, __LINE__);
+#endif
             if (beforeparam != NULL)
             {
                 beforeparam->tail = param->tail;
@@ -125,6 +154,9 @@ struct PARAM *FindKey(const char *mkey, uint64_t keylen, time_t now)
         }
         else
         {
+#ifdef DEBUG
+            debug_printf("in %s, at %d\n", __FILE__, __LINE__);
+#endif
             beforeparam = param;
             param = param->tail;
         }
@@ -132,15 +164,21 @@ struct PARAM *FindKey(const char *mkey, uint64_t keylen, time_t now)
     return NULL;
 }
 
-int AddSingleKey(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype,
+int AddSingleKey(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int64_t ttl, int datatype,
                  time_t now)
 {
+#ifdef DEBUG
+    debug_printf("in %s, at %d\n", __FILE__, __LINE__);
+#endif
     if (keylen == 0)
     {
         return KEYLENZERO;
     }
     if (datalen == 0)
     {
+#ifdef DEBUG
+        debug_printf("in %s, at %d\n", __FILE__, __LINE__);
+#endif
         return DATANULL;
     }
     uint8_t hash = mkey[0];
@@ -189,10 +227,14 @@ int AddSingleKey(const char *mkey, uint64_t keylen, const void *mdata, uint64_t 
     param->type = 0;
     param->tail = globalparam[hash];
     globalparam[hash] = param;
+#ifdef DEBUG
+    debug_printf("hash:%d,deadline:%d,keylen:%d,datalen:%d, in %s, at %d\n", hash, param->deadline, keylen, datalen,
+                 __FILE__, __LINE__);
+#endif
     return RUNSUCCESS;
 }
 
-int _Set(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype, int nx)
+int _Set(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int64_t ttl, int datatype, int nx)
 {
     time_t now = time(NULL);
     struct PARAM *param = FindKey(mkey, keylen, now);
@@ -209,48 +251,56 @@ int _Set(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen,
     return AddSingleKey(mkey, keylen, mdata, datalen, ttl, datatype, now);
 }
 
-int Set(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
+int Set(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype)
 {
     return _Set(mkey, keylen, mdata, datalen, -1, datatype, 0);
 }
 
-int SetEx(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype)
+int SetEx(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int64_t ttl, int datatype)
 {
     return _Set(mkey, keylen, mdata, datalen, ttl, datatype, 0);
 }
 
-int SetNx(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
+int SetNx(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype)
 {
     return _Set(mkey, keylen, mdata, datalen, -1, datatype, 1);
 }
 
-int SetNex(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl, int datatype)
+int SetNex(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int64_t ttl, int datatype)
 {
     return _Set(mkey, keylen, mdata, datalen, ttl, datatype, 1);
 }
 
-int64_t Get(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype)
+void *Get(const char *mkey, uint64_t keylen, int *datalen, int *datatype, int *res)
 {
     time_t now = time(NULL);
     struct PARAM *param = FindKey(mkey, keylen, now);
     if (param == NULL)
     {
-        return DATANULL;
+#ifdef DEBUG
+        debug_printf("in %s, at %d\n", __FILE__, __LINE__);
+#endif
+        *res = DATANULL;
+        return NULL;
     }
     if (param->type != 0)
     {
-        return TYPEERROR;
+        *res = TYPEERROR;
+        return NULL;
     }
     struct SINGLE *item = param->value;
-    *datatype = item->datatype;
-    uint64_t dlen = item->datalen > *datalen ? *datalen : item->datalen;
-    if (dlen == 0 || mdata == NULL)
+    uint64_t dlen = item->datalen;
+    void *mdata = (void *)malloc(dlen);
+    if (mdata == NULL)
     {
-        return item->datalen;
+        *res = MALLOCFAIL;
+        return NULL;
     }
     memcpy(mdata, item->data, dlen);
     *datalen = dlen;
-    return item->datalen;
+    *datatype = item->datatype;
+    *res = RUNSUCCESS;
+    return mdata;
 }
 
 int Del(const char *mkey, uint64_t keylen)
@@ -282,7 +332,7 @@ int IncrBy(const char *mkey, uint64_t keylen, int64_t num)
         return AddSingleKey(mkey, keylen, &n, sizeof(int64_t), -1, 9, now);
     }
     struct SINGLE *item = param->value;
-    uint64_t datalen = item->datalen;
+    int datalen = item->datalen;
     if (datalen == sizeof(char))
     {
         char n = *(char *)item->data;
@@ -331,7 +381,7 @@ int DecrBy(const char *mkey, uint64_t keylen, int64_t num)
         return AddSingleKey(mkey, keylen, &n, sizeof(int64_t), -1, 9, now);
     }
     struct SINGLE *item = param->value;
-    uint64_t datalen = item->datalen;
+    int datalen = item->datalen;
     if (datalen == sizeof(char))
     {
         char n = *(char *)item->data;
@@ -384,7 +434,7 @@ int Expire(const char *mkey, uint64_t keylen, int64_t ttl)
     return RUNSUCCESS;
 }
 
-int _Push(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype, int direct)
+int _Push(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype, int direct)
 {
     int8_t isnewparam = 0;
     uint8_t hash = mkey[0];
@@ -494,38 +544,42 @@ int _Push(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen
     return RUNSUCCESS;
 }
 
-int LPush(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
+int LPush(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype)
 {
     return _Push(mkey, keylen, mdata, datalen, datatype, 0);
 }
 
-int RPush(const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int datatype)
+int RPush(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int datatype)
 {
     return _Push(mkey, keylen, mdata, datalen, datatype, 1);
 }
 
-int64_t _Pop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype, int direct)
+void *_Pop(const char *mkey, uint64_t keylen, int *datalen, int *datatype, int direct, int *res)
 {
     time_t now = time(NULL);
     struct PARAM *param = FindKey(mkey, keylen, now);
     if (param == NULL)
     {
-        return DATANULL;
+        *res = DATANULL;
+        return NULL;
     }
     if (param->type != 1)
     {
-        return TYPEERROR;
+        *res = TYPEERROR;
+        return NULL;
     }
     struct List **listdesc = (struct List **)param->value;
     struct List *item = direct == 0 ? listdesc[0] : listdesc[1];
-    *datatype = item->datatype;
-    uint64_t dlen = item->datalen > *datalen ? *datalen : item->datalen;
-    if (dlen == 0 || mdata == NULL)
+    uint64_t dlen = item->datalen;
+    void *mdata = (void *)malloc(dlen);
+    if (mdata == NULL)
     {
-        return item->datalen;
+        *res = MALLOCFAIL;
+        return NULL;
     }
-    *datalen = dlen;
     memcpy(mdata, item->data, dlen);
+    *datalen = dlen;
+    *datatype = item->datatype;
     if (listdesc[0] == listdesc[1]) // 只有一个对象
     {
         uint8_t hash = mkey[0];
@@ -543,19 +597,19 @@ int64_t _Pop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, 
         listdesc[1] = item->head;
     }
     free(item->data);
-    uint64_t len = item->datalen;
     free(item);
-    return len;
+    *res = RUNSUCCESS;
+    return mdata;
 }
 
-int64_t LPop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype)
+void *LPop(const char *mkey, uint64_t keylen, int *datalen, int *datatype, int *res)
 {
-    return _Pop(mkey, keylen, mdata, datalen, datatype, 0);
+    return _Pop(mkey, keylen, datalen, datatype, 0, res);
 }
 
-int64_t RPop(const char *mkey, uint64_t keylen, void *mdata, uint64_t *datalen, int *datatype)
+void *RPop(const char *mkey, uint64_t keylen, int *datalen, int *datatype, int *res)
 {
-    return _Pop(mkey, keylen, mdata, datalen, datatype, 1);
+    return _Pop(mkey, keylen, datalen, datatype, 1, res);
 }
 
 struct Map *FindMap(struct PARAM *param, const char *mkey, uint64_t keylen, time_t now)
@@ -570,7 +624,7 @@ struct Map *FindMap(struct PARAM *param, const char *mkey, uint64_t keylen, time
     struct Map *beforeitem = NULL;
     while (item != NULL)
     {
-        if (now > item->deadline)
+        if (item->deadline != -1 && now > item->deadline)
         {
             struct Map *p = item;
             item = item->tail;
@@ -605,7 +659,7 @@ struct Map *FindMap(struct PARAM *param, const char *mkey, uint64_t keylen, time
     return NULL;
 }
 
-int AddMapItem(struct PARAM *param, const char *mkey, uint64_t keylen, const void *mdata, uint64_t datalen, int64_t ttl,
+int AddMapItem(struct PARAM *param, const char *mkey, uint64_t keylen, const void *mdata, int datalen, int64_t ttl,
                int datatype, time_t now)
 {
     struct Map **mapdesc = (struct Map **)param->value;
@@ -648,7 +702,7 @@ int AddMapItem(struct PARAM *param, const char *mkey, uint64_t keylen, const voi
     return RUNSUCCESS;
 }
 
-int _HSet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, uint64_t datalen,
+int _HSet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
           int64_t ttl, int datatype, int nx)
 {
     int8_t isnewparam = 0;
@@ -723,57 +777,63 @@ int _HSet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2
     return res;
 }
 
-int HSet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, uint64_t datalen,
+int HSet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
          int datatype)
 {
     return _HSet(mkey, keylen, mkey2, keylen2, mdata, datalen, -1, datatype, 0);
 }
 
-int HSetEx(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, uint64_t datalen,
+int HSetEx(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
            int64_t ttl, int datatype)
 {
     return _HSet(mkey, keylen, mkey2, keylen2, mdata, datalen, ttl, datatype, 0);
 }
 
-int HSetNx(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, uint64_t datalen,
+int HSetNx(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
            int datatype)
 {
     return _HSet(mkey, keylen, mkey2, keylen2, mdata, datalen, -1, datatype, 1);
 }
 
-int HSetNex(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, uint64_t datalen,
+int HSetNex(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, const void *mdata, int datalen,
             int64_t ttl, int datatype)
 {
     return _HSet(mkey, keylen, mkey2, keylen2, mdata, datalen, ttl, datatype, 1);
 }
 
-int64_t HGet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, void *mdata, uint64_t *datalen,
-             int *datatype)
+void *HGet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2, int *datalen, int *datatype,
+           int *res)
 {
     time_t now = time(NULL);
     struct PARAM *param = FindKey(mkey, keylen, now);
     if (param == NULL)
     {
-        return DATANULL;
+        *res = DATANULL;
+        return NULL;
     }
     if (param->type != 2)
     {
-        return TYPEERROR;
+        *res = TYPEERROR;
+        return NULL;
     }
     struct Map *item = FindMap(param, mkey2, keylen2, now);
     if (item == NULL)
     {
-        return DATANULL;
+        *res = DATANULL;
+        return NULL;
     }
-    *datatype = item->datatype;
-    uint64_t dlen = item->datalen > *datalen ? *datalen : item->datalen;
-    if (datalen == 0 || mdata == NULL)
+    uint64_t dlen = item->datalen;
+    void *mdata = (void *)malloc(dlen);
+    if (mdata == NULL)
     {
-        return item->datalen;
+        *res = MALLOCFAIL;
+        return NULL;
     }
     memcpy(mdata, item->data, dlen);
     *datalen = dlen;
-    return item->datalen;
+    *datatype = item->datatype;
+    *res = RUNSUCCESS;
+    return mdata;
 }
 
 int HDel(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2)
@@ -825,7 +885,7 @@ int HIncrBy(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keyle
         int64_t n = num;
         return AddMapItem(param, mkey2, keylen2, &n, sizeof(int64_t), -1, 9, now);
     }
-    uint64_t datalen = item->datalen;
+    int datalen = item->datalen;
     if (datalen == sizeof(char))
     {
         char n = *(char *)item->data;
@@ -882,7 +942,7 @@ int HDecrBy(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keyle
         int64_t n = 0 - num;
         return AddMapItem(param, mkey2, keylen2, &n, sizeof(int64_t), -1, 9, now);
     }
-    uint64_t datalen = item->datalen;
+    int datalen = item->datalen;
     if (datalen == sizeof(char))
     {
         char n = *(char *)item->data;
@@ -942,4 +1002,113 @@ int HExpire(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keyle
         item->deadline = now + ttl;
     }
     return RUNSUCCESS;
+}
+
+char *Keys(int *datalen, int *res)
+{
+    time_t now = time(NULL);
+    uint64_t len = 0;
+    for (int i = 0; i < 256; i++)
+    {
+        struct PARAM *param = globalparam[i];
+        while (param != NULL)
+        {
+            len += param->keylen + 30;
+            param = param->tail;
+        }
+    }
+    char *data = malloc(len);
+    if (data == NULL)
+    {
+        *res = MALLOCFAIL;
+        return NULL;
+    }
+    uint64_t offset = 0;
+    for (int i = 0; i < 256; i++)
+    {
+        struct PARAM *param = globalparam[i];
+        while (param != NULL)
+        {
+            uint64_t keylen = param->keylen;
+            memcpy(data + offset, param->key, keylen);
+            offset += keylen;
+            time_t ttl = param->deadline != -1 ? param->deadline - now : -1;
+            int l = sprintf(data + offset, " %d", ttl);
+            offset += l;
+            if (param->type == 0)
+            {
+                memcpy(data + offset, " string", 7);
+                offset += 7;
+            }
+            else if (param->type == 1)
+            {
+                memcpy(data + offset, " list", 5);
+                offset += 5;
+            }
+            else if (param->type == 2)
+            {
+                memcpy(data + offset, " hash", 5);
+                offset += 5;
+            }
+            data[offset++] = '\r';
+            data[offset++] = '\n';
+            param = param->tail;
+        }
+    }
+    *datalen = offset;
+    *res = RUNSUCCESS;
+    return data;
+}
+
+char *HKeys(char *mkey, uint64_t keylen, int *datalen, int *res)
+{
+    time_t now = time(NULL);
+    struct PARAM *param = FindKey(mkey, keylen, now);
+    if (param == NULL)
+    {
+        *res = DATANULL;
+        return NULL;
+    }
+    if (param->type != 2)
+    {
+        *res = TYPEERROR;
+        return NULL;
+    }
+    struct Map **mapdesc = (struct Map **)param->value;
+    uint64_t len = 0;
+    for (int i = 0; i < 256; i++)
+    {
+        struct Map *item = mapdesc[i];
+        while (item != NULL)
+        {
+            len += item->keylen + 22;
+            item = item->tail;
+        }
+    }
+    char *data = malloc(len);
+    if (data == NULL)
+    {
+        *res = MALLOCFAIL;
+        return NULL;
+    }
+    uint64_t offset = 0;
+    for (int i = 0; i < 256; i++)
+    {
+        struct Map *item = mapdesc[i];
+        while (item != NULL)
+        {
+            uint64_t keylen = param->keylen;
+            memcpy(data + offset, item->key, keylen);
+            offset += keylen;
+            time_t ttl = item->deadline != -1 ? item->deadline - now : -1;
+            int l = sprintf(data + offset, " %d", ttl);
+            offset += l;
+            data[offset++] = '\r';
+            data[offset++] = '\n';
+            item = item->tail;
+        }
+    }
+    *datalen = offset;
+    *res = RUNSUCCESS;
+    return data;
 }

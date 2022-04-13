@@ -4,3 +4,4 @@ main
 make*
 .vscode
 mnsql
+clang*
