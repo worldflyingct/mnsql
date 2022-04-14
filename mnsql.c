@@ -21,6 +21,8 @@ void debug_printf(char *fmt, ...)
     va_end(args);
     fflush(fp);
 }
+#else
+#define debug_printf(fmt, ...)
 #endif
 
 struct SINGLE
@@ -119,14 +121,10 @@ struct PARAM *FindKey(const char *mkey, uint64_t keylen, time_t now)
     struct PARAM *beforeparam = NULL;
     while (param != NULL)
     {
-#ifdef DEBUG
         debug_printf("in %s, at %d\n", __FILE__, __LINE__);
-#endif
         if (param->deadline != -1 && now > param->deadline)
         {
-#ifdef DEBUG
             debug_printf("in %s, at %d\n", __FILE__, __LINE__);
-#endif
             struct PARAM *p = param;
             param = param->tail;
             if (beforeparam != NULL)
@@ -141,9 +139,7 @@ struct PARAM *FindKey(const char *mkey, uint64_t keylen, time_t now)
         }
         else if (param->keylen == keylen && !memcmp(param->key, mkey, keylen))
         {
-#ifdef DEBUG
             debug_printf("in %s, at %d\n", __FILE__, __LINE__);
-#endif
             if (beforeparam != NULL)
             {
                 beforeparam->tail = param->tail;
@@ -154,9 +150,7 @@ struct PARAM *FindKey(const char *mkey, uint64_t keylen, time_t now)
         }
         else
         {
-#ifdef DEBUG
             debug_printf("in %s, at %d\n", __FILE__, __LINE__);
-#endif
             beforeparam = param;
             param = param->tail;
         }
@@ -167,18 +161,14 @@ struct PARAM *FindKey(const char *mkey, uint64_t keylen, time_t now)
 int AddSingleKey(const char *mkey, uint64_t keylen, const void *mdata, int datalen, int64_t ttl, int datatype,
                  time_t now)
 {
-#ifdef DEBUG
     debug_printf("in %s, at %d\n", __FILE__, __LINE__);
-#endif
     if (keylen == 0)
     {
         return KEYLENZERO;
     }
     if (datalen == 0)
     {
-#ifdef DEBUG
         debug_printf("in %s, at %d\n", __FILE__, __LINE__);
-#endif
         return DATANULL;
     }
     uint8_t hash = mkey[0];
@@ -227,10 +217,8 @@ int AddSingleKey(const char *mkey, uint64_t keylen, const void *mdata, int datal
     param->type = 0;
     param->tail = globalparam[hash];
     globalparam[hash] = param;
-#ifdef DEBUG
     debug_printf("hash:%d,deadline:%d,keylen:%d,datalen:%d, in %s, at %d\n", hash, param->deadline, keylen, datalen,
                  __FILE__, __LINE__);
-#endif
     return RUNSUCCESS;
 }
 
@@ -277,9 +265,7 @@ void *Get(const char *mkey, uint64_t keylen, int *datalen, int *datatype, int *r
     struct PARAM *param = FindKey(mkey, keylen, now);
     if (param == NULL)
     {
-#ifdef DEBUG
         debug_printf("in %s, at %d\n", __FILE__, __LINE__);
-#endif
         *res = DATANULL;
         return NULL;
     }
