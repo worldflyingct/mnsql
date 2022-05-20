@@ -293,7 +293,7 @@ int Del(const char *mkey, uint64_t keylen)
 {
     time_t now = time(NULL);
     struct PARAM *param = FindKey(mkey, keylen, now);
-    if (param != NULL)
+    if (param == NULL)
     {
         return DATANULL;
     }
