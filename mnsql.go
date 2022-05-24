@@ -1,7 +1,6 @@
 package mnsql
 
 /*
-#cgo LDFLAGS: -static
 #include "mnsql.h"
 */
 import "C"
