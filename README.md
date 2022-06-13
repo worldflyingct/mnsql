@@ -12,7 +12,7 @@ func Set(key string, value interface{}) int
 写入有生命期的对象，生命期消失后数据自动消失  
 但是如果存在相同的则覆盖写入  
 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；  
-func SetEx(key string, value interface{}) int  
+func SetEx(key string, value interface{}, ttl int64) int  
 
 写入对象，但是如果存在相同的key则不写入  
 返回定义：0代表成功；-1代表key长度为0；-2代表value长度为0；-3代表value不是支持的类型；-4代表已经存在相同key的对象，写入失败  
