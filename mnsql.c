@@ -65,6 +65,7 @@ struct PARAM *globalparam[256];
 
 void FreeItem(struct PARAM *param)
 {
+    int i;
     int8_t type = param->type;
     if (type == 0)
     {
@@ -92,7 +93,7 @@ void FreeItem(struct PARAM *param)
     else if (type == 2)
     {
         struct Map **mapdesc = (struct Map **)param->value;
-        for (int i = 0; i < 256; i++)
+        for (i = 0; i < 256; i++)
         {
             struct Map *item = mapdesc[i];
             while (item != NULL)
@@ -719,7 +720,7 @@ int _HSet(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keylen2
             return MALLOCFAIL;
         }
         memcpy(key, mkey, keylen);
-        memset(mapdesc, 0, 256);
+        memset(mapdesc, 0, 256 * sizeof(struct Map *));
         param->key = key;
         param->keylen = keylen;
         param->value = mapdesc;
@@ -992,9 +993,10 @@ int HExpire(const char *mkey, uint64_t keylen, const char *mkey2, uint64_t keyle
 
 char *Keys(int *datalen, int *res)
 {
+    int i;
     time_t now = time(NULL);
     uint64_t len = 0;
-    for (int i = 0; i < 256; i++)
+    for (i = 0; i < 256; i++)
     {
         struct PARAM *param = globalparam[i];
         while (param != NULL)
@@ -1010,7 +1012,7 @@ char *Keys(int *datalen, int *res)
         return NULL;
     }
     uint64_t offset = 0;
-    for (int i = 0; i < 256; i++)
+    for (i = 0; i < 256; i++)
     {
         struct PARAM *param = globalparam[i];
         while (param != NULL)
@@ -1048,6 +1050,7 @@ char *Keys(int *datalen, int *res)
 
 char *HKeys(char *mkey, uint64_t keylen, int *datalen, int *res)
 {
+    int i;
     time_t now = time(NULL);
     struct PARAM *param = FindKey(mkey, keylen, now);
     if (param == NULL)
@@ -1062,7 +1065,7 @@ char *HKeys(char *mkey, uint64_t keylen, int *datalen, int *res)
     }
     struct Map **mapdesc = (struct Map **)param->value;
     uint64_t len = 0;
-    for (int i = 0; i < 256; i++)
+    for (i = 0; i < 256; i++)
     {
         struct Map *item = mapdesc[i];
         while (item != NULL)
@@ -1078,7 +1081,7 @@ char *HKeys(char *mkey, uint64_t keylen, int *datalen, int *res)
         return NULL;
     }
     uint64_t offset = 0;
-    for (int i = 0; i < 256; i++)
+    for (i = 0; i < 256; i++)
     {
         struct Map *item = mapdesc[i];
         while (item != NULL)
