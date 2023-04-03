@@ -537,6 +537,42 @@ func HExpire(key string, key2 string, ttl int64) int {
 	return res
 }
 
+func Keys() (string, int) {
+	var datalen C.int
+	var res C.int
+	metex.Lock()
+	data := C.Keys(&datalen, &res)
+	metex.Unlock()
+	if res < 0 {
+		return "", C.MALLOCFAIL
+	}
+	cdata := C.GoStringN(data, datalen)
+	C.free(unsafe.Pointer(data))
+	return cdata, 0
+}
+
+func HKeys(key string) (string, int) {
+	var datalen C.int
+	var res C.int
+	k := C.CString(key)
+	metex.Lock()
+	data := C.HKeys(k, C.uint64_t(len(key)), &datalen, &res)
+	metex.Unlock()
+	C.free(unsafe.Pointer(k))
+	if res < 0 {
+		if res == C.DATANULL {
+			return "data is null", int(res)
+		} else if res == C.TYPEERROR {
+			return "type is err", int(res)
+		} else {
+			return "malloc fail", int(res)
+		}
+	}
+	cdata := C.GoStringN(data, datalen)
+	C.free(unsafe.Pointer(data))
+	return cdata, 0
+}
+
 func StartCmdLineServer(port uint16) (net.Listener, error) {
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -570,18 +606,8 @@ func cmdLineHandle(conn net.Conn, ln net.Listener) error {
 		if cmdlen > 0 {
 			switch cmd[0] {
 			case "keys":
-				var datalen C.int
-				var res C.int
-				metex.Lock()
-				data := C.Keys(&datalen, &res)
-				metex.Unlock()
-				if res < 0 {
-					fmt.Fprintln(conn, "malloc fail", res)
-					continue
-				}
-				cdata := C.GoStringN(data, datalen)
-				C.free(unsafe.Pointer(data))
-				fmt.Fprintln(conn, cdata, 0)
+				v, r := Keys()
+				fmt.Fprintln(conn, v, r)
 			case "get":
 				if cmdlen > 1 {
 					v, r := Get(cmd[1])
@@ -611,26 +637,8 @@ func cmdLineHandle(conn net.Conn, ln net.Listener) error {
 				}
 			case "hkeys":
 				if cmdlen > 1 {
-					var datalen C.int
-					var res C.int
-					key := C.CString(cmd[1])
-					metex.Lock()
-					data := C.HKeys(key, C.uint64_t(len(cmd[1])), &datalen, &res)
-					metex.Unlock()
-					C.free(unsafe.Pointer(key))
-					if res < 0 {
-						if res == C.DATANULL {
-							fmt.Fprintln(conn, "data is null", res)
-						} else if res == C.TYPEERROR {
-							fmt.Fprintln(conn, "type is err", res)
-						} else {
-							fmt.Fprintln(conn, "malloc fail", res)
-						}
-						continue
-					}
-					cdata := C.GoStringN(data, datalen)
-					C.free(unsafe.Pointer(data))
-					fmt.Fprintln(conn, cdata, 0)
+					v, r := HKeys(cmd[1])
+					fmt.Fprintln(conn, v, r)
 				}
 			case "exit":
 				return nil

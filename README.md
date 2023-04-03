@@ -114,6 +114,16 @@ func HDecrBy(key string, key2 string, num int64) int
 返回定义：0代表成功；-1代表key长度为0；-2代表对象不存在；  
 func HExpire(key string, key2 string, ttl int64) int  
 
+获取顶层所有的key  
+返回定义：0代表成功；-5代表内存不足；  
+func Keys() (string, int)  
+多个key之间以\r\n作为包间隔，key内部采用key名称，ttl与数据类型作为返回的字符串  
+
+获取hash对象所有的key  
+返回定义：0代表成功；-5代表内存不足；  
+func HKeys(key string) (string, int)  
+多个key之间以\r\n作为包间隔，key内部采用key名称，ttl与数据类型作为返回的字符串  
+
 启动调试服务，port为端口号  
 func StartCmdLineServer(port uint16) (net.Listener, error)  
 调试服务的使用方法是通过tcp去连接，然后下各种查询命令。已有命令如下  
