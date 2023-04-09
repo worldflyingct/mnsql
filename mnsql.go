@@ -573,6 +573,13 @@ func HKeys(key string) (string, int) {
 	return cdata, 0
 }
 
+func FlushDB() {
+	metex.Lock()
+	C.FlushDB()
+	metex.Unlock()
+	return
+}
+
 func StartCmdLineServer(port uint16) (net.Listener, error) {
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {

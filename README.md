@@ -124,6 +124,10 @@ func Keys() (string, int)
 func HKeys(key string) (string, int)  
 多个key之间以\r\n作为包间隔，key内部采用key名称，ttl与数据类型作为返回的字符串  
 
+清空内存数据库  
+func FlushDB()  
+无参数，无返回  
+
 启动调试服务，port为端口号  
 func StartCmdLineServer(port uint16) (net.Listener, error)  
 调试服务的使用方法是通过tcp去连接，然后下各种查询命令。已有命令如下  

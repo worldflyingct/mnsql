@@ -50,6 +50,7 @@ extern "C"
     char *Keys(int *datalen, int *res);
     char *Lrange(char *mkey, uint64_t keylen, int *datalen, int *res);
     char *HKeys(char *mkey, uint64_t keylen, int *datalen, int *res);
+    void FlushDB();
 
 #ifdef __cplusplus
 }

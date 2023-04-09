@@ -1101,3 +1101,22 @@ char *HKeys(char *mkey, uint64_t keylen, int *datalen, int *res)
     *res = RUNSUCCESS;
     return data;
 }
+
+void FlushDB()
+{
+    int hash;
+    for (hash = 0; hash < 256; hash++)
+    {
+        if (globalparam[hash])
+        {
+            struct PARAM *param = globalparam[hash];
+            while (param)
+            {
+                struct PARAM *temp = param;
+                param = param->tail;
+                FreeItem(temp);
+            }
+            globalparam[hash] = NULL;
+        }
+    }
+}
