@@ -1086,7 +1086,7 @@ char *HKeys(char *mkey, uint64_t keylen, int *datalen, int *res)
         struct Map *item = mapdesc[i];
         while (item != NULL)
         {
-            uint64_t keylen = param->keylen;
+            uint64_t keylen = item->keylen;
             memcpy(data + offset, item->key, keylen);
             offset += keylen;
             time_t ttl = item->deadline != -1 ? item->deadline - now : -1;
